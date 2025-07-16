@@ -61,9 +61,24 @@ class USGSDataFetcher:
         has_data_since: Optional[date] = None
     ) -> pd.DataFrame:
         """Fetch site information from NWIS"""
+
+        # Map site types to USGS codes
+        site_type_mapping = {
+            'Stream': 'ST',
+            'Lake': 'LK', 
+            'Groundwater': 'GW',
+            # Add more mappings as needed
+        }
+
+        # Convert site types to USGS codes
+        mapped_site_types = []
+        for st in site_type:
+            mapped_site_types.append(site_type_mapping.get(st, st))
+
         query_params = {
             'stateCd': state_cd,
-            'siteType': site_type
+            'siteType': mapped_site_types,
+            'siteOutput': 'expanded'  # need to override the library's "Expanded" value to make this work
         }
         
         if has_data_since:
