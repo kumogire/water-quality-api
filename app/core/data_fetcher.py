@@ -84,4 +84,10 @@ class USGSDataFetcher:
         if has_data_since:
             query_params['startDt'] = has_data_since.strftime('%Y-%m-%d')
         
-        return nwis.get_info(**query_params)
+        result = nwis.get_info(**query_params)
+    
+        # Handle if result is a tuple
+        if isinstance(result, tuple):
+            return result[0]  # Usually the first element is the DataFrame
+        else:
+            return result
