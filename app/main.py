@@ -34,7 +34,8 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Include routers
 app.include_router(health.router, tags=["health"])
 app.include_router(water_quality.router, prefix="/water-quality", tags=["water-quality"])
-app.include_router(sites.router, prefix="/sites", tags=["sites"])
+# Route included in water quality definition
+# app.include_router(sites.router, prefix="/sites", tags=["sites"])
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
