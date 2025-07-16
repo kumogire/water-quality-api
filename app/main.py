@@ -2,6 +2,7 @@
 Main FastAPI application entry point
 """
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse
@@ -20,6 +21,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Add middleware
 app.add_middleware(
@@ -65,6 +69,7 @@ async def root():
         <div class="endpoint">
             <span class="method">POST</span> <code>/water-quality/query</code>
             <p>Query water quality data and generate reports</p>
+            <p><a href="/static/water-quality.html">Use this form to generate JSON</a></p>
         </div>
         
         <div class="endpoint">

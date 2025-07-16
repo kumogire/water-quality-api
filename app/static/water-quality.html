@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Quality Data Query</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .checkbox-item:hover {
+            border-color: #2196F3;
+            background: #f8fafe;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f1f3f4;
+            color: #333;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e8eaed;
+            border-color: #d1d5db;
+        }
+
+        .api-info {
+            background: #f8fafe;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .api-info h3 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .api-info code {
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Water Quality Data Query</h1>
+            <p>Generate comprehensive water quality reports with real-time data</p>
+        </div>
+
+        <div class="form-container">
+            <form id="waterQualityForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="region">Region/Location</label>
+                        <select id="region" class="form-control" required>
+                            <option value="">Select Region</option>
+                            <option value="northeast">Northeast</option>
+                            <option value="southeast">Southeast</option>
+                            <option value="midwest">Midwest</option>
+                            <option value="southwest">Southwest</option>
+                            <option value="west">West</option>
+                            <option value="pacific">Pacific Northwest</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="waterSource">Water Source Type</label>
+                        <select id="waterSource" class="form-control" required>
+                            <option value="">Select Source</option>
+                            <option value="groundwater">Groundwater</option>
+                            <option value="surface">Surface Water</option>
+                            <option value="municipal">Municipal Supply</option>
+                            <option value="well">Private Well</option>
+                            <option value="reservoir">Reservoir</option>
+                            <option value="river">River/Stream</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reportType">Report Type</label>
+                    <select id="reportType" class="form-control" required>
+                        <option value="">Select Report Type</option>
+                        <option value="summary">Summary Report</option>
+                        <option value="detailed">Detailed Analysis</option>
+                        <option value="compliance">Compliance Check</option>
+                        <option value="trend">Trend Analysis</option>
+                        <option value="comparative">Comparative Report</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Quality Parameters to Include</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ph" name="parameters" value="ph">
+                            <label for="ph">pH Level</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="turbidity" name="parameters" value="turbidity">
+                            <label for="turbidity">Turbidity</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="chlorine" name="parameters" value="chlorine">
+                            <label for="chlorine">Chlorine</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="bacteria" name="parameters" value="bacteria">
+                            <label for="bacteria">Bacterial Count</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="heavy_metals" name="parameters" value="heavy_metals">
+                            <label for="heavy_metals">Heavy Metals</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="nitrates" name="parameters" value="nitrates">
+                            <label for="nitrates">Nitrates</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
+                    <button type="submit" class="btn btn-primary">Generate Report</button>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Generating water quality report...</p>
+                </div>
+            </form>
+
+            <div class="api-info">
+                <h3>API Endpoint Information</h3>
+                <p><strong>Endpoint:</strong> <code>POST /water-quality/query</code></p>
+                <p><strong>Content-Type:</strong> <code>application/json</code></p>
+                <p>This form will submit the selected parameters to generate comprehensive water quality reports based on your specified criteria.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set default dates (last 30 days)
+        window.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+        });
+
+        document.getElementById('waterQualityForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            
+            // Collect form data
+            const formData = {
+                region: document.getElementById('region').value,
+                waterSource: document.getElementById('waterSource').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                reportType: document.getElementById('reportType').value,
+                parameters: Array.from(document.querySelectorAll('input[name="parameters"]:checked'))
+                    .map(cb => cb.value)
+            };
+            
+            // Simulate API call
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                alert('Report generated successfully!\n\nAPI Payload:\n' + JSON.stringify(formData, null, 2));
+            }, 2000);
+        });
+
+        function resetForm() {
+            document.getElementById('waterQualityForm').reset();
+            
+            // Reset default dates
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+        }
+
+        // Validate date range
+        document.getElementById('startDate').addEventListener('change', validateDateRange);
+        document.getElementById('endDate').addEventListener('change', validateDateRange);
+
+        function validateDateRange() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                alert('Start date cannot be later than end date');
+                document.getElementById('startDate').value = '';
+            }
+        }
+    </script>
+</body>
+</html>
